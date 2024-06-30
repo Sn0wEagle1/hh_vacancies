@@ -48,7 +48,26 @@ def get_content(html):
         vacancy_soup = BeautifulSoup(vacancy_html, 'html.parser')
         skill_blocks = vacancy_soup.find_all('div', class_='magritte-tag__label___YHV-o_3-0-0')
         skills = ', '.join([skill.text.strip() for skill in skill_blocks]) if skill_blocks else 'Не указано'
-        metro = vacancy_soup.find('span', attrs={'data-qa': 'vacancy-view-raw-address'}).get_text(strip=True) if vacancy_soup.find('span', attrs={'data-qa': 'vacancy-view-raw-address'}) else 'Не указано'
+        raw_address = vacancy_soup.find('span', attrs={'data-qa': 'vacancy-view-raw-address'}).get_text(
+            strip=True) if vacancy_soup.find('span', attrs={'data-qa': 'vacancy-view-raw-address'}) else 'Не указано'
+
+        # Обрабатываем каждую часть адреса, добавляя "метро" перед станцией метро
+        address_parts = raw_address.split(',')
+        processed_parts = []
+        metro_stations_text = []
+        for part in address_parts:
+            part = part.strip()
+            metro_station = vacancy_soup.find_all('span', class_='metro-station')
+            for station in metro_station:
+                station_text = station.get_text(strip=True)
+                metro_stations_text.append(station_text)
+            if metro_station and part in metro_stations_text:
+                processed_parts.append('метро ' + part)
+            else:
+                processed_parts.append(part)
+
+        metro = ', '.join(processed_parts)
+        print(metro)
         metro = remove_duplicates(metro)
         experience = item.find('span', attrs={'data-qa': 'vacancy-serp__vacancy-work-experience'}).get_text(strip=True) if item.find('span', attrs={'data-qa': 'vacancy-serp__vacancy-work-experience'}) else 'Не указано'
         remote = item.find('span', attrs={'data-qa': 'vacancy-label-remote-work-schedule'}).get_text(strip=True) if item.find('span', attrs={'data-qa': 'vacancy-label-remote-work-schedule'}) else 'Не указано'

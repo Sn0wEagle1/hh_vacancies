@@ -1,39 +1,33 @@
 <!-- jobs/templates/jobs/job_list.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Job List</title>
+    <title>Job Listings</title>
 </head>
 <body>
-    <h1>Вакансии для Данила Астахова</h1>
+    <h1>Job Listings</h1>
 
-    <!-- Таблица с вакансиями -->
-    <table>
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Company</th>
-                <th>Salary</th>
-                <th>Skills</th>
-                <th>Metro</th>
-                <th>Experience</th>
-                <th>Remote</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for job in jobs %}
-            <tr>
-                <td>{{ job.title }}</td>
-                <td>{{ job.company }}</td>
-                <td>{{ job.salary }}</td>
-                <td>{{ job.skills }}</td>
-                <td>{{ job.metro }}</td>
-                <td>{{ job.experience }}</td>
-                <td>{{ job.remote }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Форма поиска -->
+    <form method="GET" action="{% url 'job_list' %}">
+        <input type="text" name="q" placeholder="Search for jobs">
+        <button type="submit">Search</button>
+    </form>
+
+    <ul>
+        {% for job in jobs %}
+            <li>
+                <h2>{{ job.title }}</h2>
+                <p>Company: {{ job.company }}</p>
+                <p>Salary: {{ job.salary }}</p>
+                <p>Skills: {{ job.skills }}</p>
+                <p>Metro: {{ job.metro }}</p>
+                <p>Experience: {{ job.experience }}</p>
+                <p>Remote: {{ job.remote }}</p>
+                <a href="{{ job.link }}" target="_blank">More details</a>
+            </li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
