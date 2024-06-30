@@ -1,0 +1,39 @@
+<!-- jobs/templates/jobs/job_list.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job List</title>
+</head>
+<body>
+    <h1>Вакансии для Данила Астахова</h1>
+
+    <!-- Таблица с вакансиями -->
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Company</th>
+                <th>Salary</th>
+                <th>Skills</th>
+                <th>Metro</th>
+                <th>Experience</th>
+                <th>Remote</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td>{{ job.title }}</td>
+                <td>{{ job.company }}</td>
+                <td>{{ job.salary }}</td>
+                <td>{{ job.skills }}</td>
+                <td>{{ job.metro }}</td>
+                <td>{{ job.experience }}</td>
+                <td>{{ job.remote }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
