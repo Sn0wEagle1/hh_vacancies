@@ -139,7 +139,7 @@ def parse():
         html = get_html(URL, PARAMS)
         if html:
             new_jobs = get_content(html)
-            if page == 3:
+            if not new_jobs:
                 break
             jobs.extend(new_jobs)
             page += 1
