@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job List</title>
+    <title>Вакансии</title>
 </head>
 <body>
-    <h1>Job List</h1>
+    <h1>Укажите фильтры вакансий</h1>
     <form method="GET">
         {{ form.as_p }}
         <button type="submit">Поиск</button>
     </form>
+
+    <h2>Найденные вакансии</h2>
+    <p>Найдено вакансий: {{ jobs|length }}</p>
 
     <ul>
         {% for job in jobs %}
@@ -19,7 +22,7 @@
                 <p>Компания: {{ job.company }}</p>
                 <p>Зарплата: {{ job.salary }}</p>
                 <p>Навыки: {{ job.skills }}</p>
-                <p>Адрес: {{ job.metro }}</p>
+                <p>Адрес: {{ job.address }}</p>
                 <p>Опыт: {{ job.experience }}</p>
                 <p>Удаленная работа: {{ job.remote }}</p>
                 <a href="{{ job.link }}">Подробнее</a>
