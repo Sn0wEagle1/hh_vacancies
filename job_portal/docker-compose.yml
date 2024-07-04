@@ -25,3 +25,18 @@ services:
       - DB_PASSWORD=Hfnfneq2005
       - DB_HOST=db
       - DB_PORT=5432
+
+  parser:
+    build: .
+    command: python parser/parser.py
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    environment:
+      - DB_NAME=vacancies
+      - DB_USER=postgres
+      - DB_PASSWORD=Hfnfneq2005
+      - DB_HOST=db
+      - DB_PORT=5432
+      - PARSE_INTERVAL=43200

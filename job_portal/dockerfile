@@ -1,6 +1,7 @@
+# Используем базовый образ Python
 FROM python:3.10-slim
 
-# Установите зависимости для PostgreSQL и другие необходимые пакеты
+# Установка зависимостей для PostgreSQL и другие необходимые пакеты
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         postgresql-server-dev-all \
@@ -9,20 +10,20 @@ RUN apt-get update \
         musl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Установите рабочую директорию в /app
+# Установка рабочей директории в /app
 WORKDIR /app
 
-# Скопируйте файлы requirements.txt в контейнер
+# Копирование файлов requirements.txt в контейнер
 COPY requirements.txt .
 
-# Установите зависимости из requirements.txt
+# Установка зависимостей из requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Скопируйте оставшиеся файлы проекта в контейнер
+# Копирование остальных файлов проекта в контейнер
 COPY . .
 
-# Откройте порт 8000 для доступа к приложению
-EXPOSE 8000
+# Определение параметров для парсера
+ENV PARSE_INTERVAL=43200
 
-# Запустите сервер Django
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Команда для запуска парсера
+CMD ["python", "parser/parser.py"]

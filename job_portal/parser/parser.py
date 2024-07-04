@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import psycopg2
+import time
 
 # URL для поиска вакансий по IT
 URL = 'https://hh.ru/search/vacancy'
@@ -13,6 +14,9 @@ PARAMS = {
     'area': '113',  # Москва
     'page': '0'
 }
+
+# Параметры для управления временными интервалами
+PARSE_INTERVAL = 12 * 60 * 60  # 12 часов в секундах
 
 
 def get_html(url, params=None):
@@ -71,7 +75,6 @@ def get_content(html):
                 processed_parts.append(part)
 
         metro = ', '.join(processed_parts)
-        print(metro)
         metro = remove_duplicates(metro)
         experience = item.find('span', attrs={'data-qa': 'vacancy-serp__vacancy-work-experience'}).get_text(
             strip=True) if item.find('span',
@@ -107,20 +110,29 @@ def save_to_db(jobs):
     cursor = conn.cursor()
 
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS jobs_job (
-        id SERIAL PRIMARY KEY,
-        title TEXT,
-        link TEXT,
-        company TEXT,
-        salary TEXT,
-        skills TEXT,
-        metro TEXT,
-        experience TEXT,
-        remote TEXT
-    )
-    ''')
+        CREATE TABLE IF NOT EXISTS jobs_job (
+            id SERIAL PRIMARY KEY,
+            title TEXT,
+            link TEXT,
+            company TEXT,
+            salary TEXT,
+            skills TEXT,
+            metro TEXT,
+            experience TEXT,
+            remote TEXT
+        )
+        ''')
 
     for job in jobs:
+        # Проверяем, существует ли уже вакансия с таким же заголовком
+        cursor.execute('SELECT id FROM jobs_job WHERE link = %s', (job['link'],))
+        existing_job = cursor.fetchone()
+
+        if existing_job:
+            print(f"Вакансия с заголовком '{job['title']}' уже существует в базе данных, пропускаем...")
+            continue
+
+        # Вставляем новую вакансию
         cursor.execute('''
         INSERT INTO jobs_job (title, link, company, salary, skills, metro, experience, remote) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         ''', (job['title'], job['link'], job['company'], job['salary'], job['skills'], job['metro'], job['experience'],
@@ -132,24 +144,26 @@ def save_to_db(jobs):
 
 
 def parse():
-    jobs = []
-    page = 0
     while True:
-        PARAMS['page'] = page
-        html = get_html(URL, PARAMS)
-        if html:
-            new_jobs = get_content(html)
-            if not new_jobs:
+        jobs = []
+        page = 0
+        while True:
+            PARAMS['page'] = page
+            html = get_html(URL, PARAMS)
+            if html:
+                new_jobs = get_content(html)
+                if page == 3:
+                    break
+                jobs.extend(new_jobs)
+                page += 1
+                print(f"Обработана страница {page}")
+            else:
                 break
-            jobs.extend(new_jobs)
-            page += 1
-            print(page)
-        else:
-            break
-    return jobs
+
+        save_to_db(jobs)
+        print(f"Данные обновлены. Ожидание следующего парсинга через {PARSE_INTERVAL} секунд...")
+        time.sleep(PARSE_INTERVAL)
 
 
-# Сохранение найденных вакансий в базу данных
-jobs = parse()
-if jobs:
-    save_to_db(jobs)
+# Запуск парсинга
+parse()
