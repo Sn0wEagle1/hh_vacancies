@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'job_list' %}">На главную</a></li>
+                <li><a href="{% url 'register' %}">Зарегистрироваться</a></li>
+            </ul>
+        </nav>
+        {% if user.is_authenticated %}
+            <div class="user-icon">
+                <a href="{% url 'profile' %}">{{ user.username }}</a>
+            </div>
+        {% endif %}
+    </header>
+    <main>
+        <h2>Вход</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Войти</button>
+        </form>
+    </main>
+</body>
+</html>

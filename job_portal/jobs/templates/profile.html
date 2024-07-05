@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль пользователя</title>
+    <style>
+        .form-container {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Расстояние между элементами */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Ваш профиль</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'job_list' %}">Главная</a></li>
+                <li><a href="{% url 'logout' %}">Выйти</a></li>
+            </ul>
+        </nav>
+    </header>
+    <h2>Сохраненные вакансии</h2>
+    <form action="{% url 'profile' %}" method="get" class="form-container">
+        {{ sort_form }}
+        <button type="submit">Применить</button>
+    </form>
+    <ul>
+        {% for job in saved_jobs %}
+            <li>
+                <h2>{{ job.title }}</h2>
+                <p>Компания: {{ job.company }}</p>
+                <p>Зарплата: {{ job.salary }}</p>
+                <p>Навыки: {{ job.skills }}</p>
+                <p>Адрес: {{ job.address }}</p>
+                <p>Опыт: {{ job.experience }}</p>
+                <p>Удаленная работа: {{ job.remote }}</p>
+                <a href="{{ job.link }}">Подробнее</a>
+                <form action="{% url 'delete_saved_job' job.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Удалить</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

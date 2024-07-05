@@ -1,7 +1,11 @@
-from django.shortcuts import render
 from .models import Job
-from .forms import JobFilterForm
+from .forms import JobFilterForm, UserRegisterForm, UserLoginForm, SortForm
 import re
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.decorators import login_required
+from .models import SavedJob
+from django.contrib import messages
 
 USD_TO_RUB = 88
 EUR_TO_RUB = 94
@@ -117,7 +121,7 @@ def job_list(request):
         elif sort_by == 'desc':
             jobs = sorted(jobs, key=lambda job: get_salary_value(job, sort_by), reverse=True)
 
-    return render(request, 'jobs/job_list.html', {'form': form, 'jobs': jobs})
+    return render(request, 'job_list.html', {'form': form, 'jobs': jobs})
 
 def get_salary_value(job, sort_by):
     salary = job.salary.replace(' ', '').replace(' ', '')  # Удаление пробелов и неразрывных пробелов
@@ -155,3 +159,108 @@ def get_salary_value(job, sort_by):
         max_salary_value = -float('inf')
 
     return max_salary_value
+
+def register(request):
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('profile')
+    else:
+        form = UserRegisterForm()
+    return render(request, 'register.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = UserLoginForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('profile')
+    else:
+        form = UserLoginForm()
+    return render(request, 'login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+@login_required
+def profile(request):
+    saved_jobs = SavedJob.objects.filter(user=request.user)
+    sort_form = SortForm(request.GET)
+    sort_by = None
+
+    if sort_form.is_valid():
+        sort_by = sort_form.cleaned_data['sort_by']
+
+        # Сортировка сохраненных вакансий по зарплате
+        if sort_by == 'desc':
+            saved_jobs = sorted(saved_jobs, key=lambda job: get_salary_value(job, 'desc'), reverse=True)
+        elif sort_by == 'asc':
+            saved_jobs = sorted(saved_jobs, key=lambda job: get_salary_value(job, 'asc'), reverse=False)
+
+    return render(request, 'profile.html', {'saved_jobs': saved_jobs, 'sort_form': sort_form, 'sort_by': sort_by})
+
+def get_salary_value(job, sort_by):
+    salary = job.salary.replace(' ', '').replace(' ', '')  # Удаление пробелов и неразрывных пробелов
+
+    # Определение валюты
+    if '$' in salary:
+        currency_rate = USD_TO_RUB
+    elif '€' in salary:
+        currency_rate = EUR_TO_RUB
+    else:
+        currency_rate = 1  # Если валюта рубли или не указана
+
+    # Извлечение диапазонов и чисел зарплат
+    salary_ranges = re.findall(r'(\d+[-\d+]*)', salary)
+
+    max_salary_value = 0
+
+    for salary_range in salary_ranges:
+        # Разделение диапазонов зарплат, если они есть, и преобразование в числа
+        salaries = list(map(int, re.findall(r'\d+', salary_range)))
+
+        if len(salaries) == 2:
+            # Конвертация зарплат в рубли
+            salaries = [s * currency_rate for s in salaries]
+            max_salary_value = max(max_salary_value, max(salaries))
+        elif len(salaries) == 1:
+            # Конвертация зарплаты в рубли
+            salary_value = salaries[0] * currency_rate
+            max_salary_value = max(max_salary_value, salary_value)
+
+    # Если зарплата не указана, возвращаем очень большое число для сортировки по возрастанию
+    if max_salary_value == 0 and sort_by == 'asc':
+        max_salary_value = float('inf')  # или другое очень большое число
+    elif max_salary_value == 0 and sort_by == 'desc':
+        max_salary_value = -float('inf')
+
+    return max_salary_value
+
+@login_required
+def save_job(request, job_id):
+    job = get_object_or_404(Job, id=job_id)
+    SavedJob.objects.create(
+        user=request.user,
+        title=job.title,
+        link=job.link,
+        company=job.company,
+        salary=job.salary,
+        skills=job.skills,
+        address=job.address,
+        experience=job.experience,
+        remote=job.remote
+    )
+    messages.success(request, f'Вакансия "{job.title}" добавлена в сохраненные!')
+    return redirect(request.META.get('HTTP_REFERER', 'jobs:list'))
+
+@login_required
+def delete_saved_job(request, job_id):
+    saved_job = get_object_or_404(SavedJob, id=job_id, user=request.user)
+    saved_job.delete()
+    messages.success(request, f'Вакансия "{saved_job.title}" удалена из сохраненных!')
+    return redirect('profile')
+

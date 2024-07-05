@@ -10,8 +10,8 @@ HEADERS = {
     'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
 }
 PARAMS = {
-    'text': 'программист',  # Можно изменить на другие ключевые слова
-    'area': '113',  # Москва
+    'text': 'программист, IT',  # Можно изменить на другие ключевые слова
+    'area': '113',  # Россия
     'page': '0'
 }
 
@@ -92,7 +92,7 @@ def get_content(html):
             'company': company,
             'salary': salary,
             'skills': skills,
-            'metro': metro,
+            'address': metro,
             'experience': experience,
             'remote': remote
         })
@@ -117,7 +117,7 @@ def save_to_db(jobs):
             company TEXT,
             salary TEXT,
             skills TEXT,
-            metro TEXT,
+            address TEXT,
             experience TEXT,
             remote TEXT
         )
@@ -134,8 +134,8 @@ def save_to_db(jobs):
 
         # Вставляем новую вакансию
         cursor.execute('''
-        INSERT INTO jobs_job (title, link, company, salary, skills, metro, experience, remote) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        ''', (job['title'], job['link'], job['company'], job['salary'], job['skills'], job['metro'], job['experience'],
+        INSERT INTO jobs_job (title, link, company, salary, skills, address, experience, remote) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        ''', (job['title'], job['link'], job['company'], job['salary'], job['skills'], job['address'], job['experience'],
               job['remote']))
 
     conn.commit()
@@ -152,7 +152,7 @@ def parse():
             html = get_html(URL, PARAMS)
             if html:
                 new_jobs = get_content(html)
-                if page == 3:
+                if not new_jobs:
                     break
                 jobs.extend(new_jobs)
                 page += 1

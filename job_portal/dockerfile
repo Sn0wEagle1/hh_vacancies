@@ -1,7 +1,7 @@
 # Используем базовый образ Python
 FROM python:3.10-slim
 
-# Установка зависимостей для PostgreSQL и другие необходимые пакеты
+# Установка зависимостей для PostgreSQL и других необходимых пакетов
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         postgresql-server-dev-all \
@@ -25,5 +25,5 @@ COPY . .
 # Определение параметров для парсера
 ENV PARSE_INTERVAL=43200
 
-# Команда для запуска парсера
+# Команда для запуска парсера по умолчанию (будет переопределена в docker-compose.yml)
 CMD ["python", "parser/parser.py"]
