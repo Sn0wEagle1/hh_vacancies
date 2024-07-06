@@ -1,13 +1,10 @@
 import os
 import sys
 import django
-from django.conf import settings
 
-# Укажите путь к project_root и добавьте его в sys.path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(project_root)
 
-# Укажите путь к settings.py
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'job_portal.settings')
 
 # Инициализация Django
