@@ -152,9 +152,8 @@ def get_salary_value(job, sort_by):
             salary_value = salaries[0] * currency_rate
             max_salary_value = max(max_salary_value, salary_value)
 
-    # Если зарплата не указана, возвращаем очень большое число для сортировки по возрастанию
     if max_salary_value == 0 and sort_by == 'asc':
-        max_salary_value = float('inf')  # или другое очень большое число
+        max_salary_value = float('inf')
     elif max_salary_value == 0 and sort_by == 'desc':
         max_salary_value = -float('inf')
 
@@ -232,9 +231,8 @@ def get_salary_value(job, sort_by):
             salary_value = salaries[0] * currency_rate
             max_salary_value = max(max_salary_value, salary_value)
 
-    # Если зарплата не указана, возвращаем очень большое число для сортировки по возрастанию
     if max_salary_value == 0 and sort_by == 'asc':
-        max_salary_value = float('inf')  # или другое очень большое число
+        max_salary_value = float('inf')
     elif max_salary_value == 0 and sort_by == 'desc':
         max_salary_value = -float('inf')
 

@@ -40,3 +40,19 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - PARSE_INTERVAL=43200
+
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    command: pytest
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    environment:
+      - DB_NAME=vacancies
+      - DB_USER=postgres
+      - DB_PASSWORD=Hfnfneq2005
+      - DB_HOST=db
+      - DB_PORT=5432
