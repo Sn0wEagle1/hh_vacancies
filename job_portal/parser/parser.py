@@ -1,6 +1,21 @@
+import os
+import sys
+import django
+from django.conf import settings
+
+# Укажите путь к project_root и добавьте его в sys.path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(project_root)
+
+# Укажите путь к settings.py
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'job_portal.settings')
+
+# Инициализация Django
+django.setup()
+
 import requests
 from bs4 import BeautifulSoup
-import psycopg2
+from django.db import connection
 import time
 
 # URL для поиска вакансий по IT
@@ -100,47 +115,37 @@ def get_content(html):
 
 
 def save_to_db(jobs):
-    conn = psycopg2.connect(
-        dbname='vacancies',
-        user='postgres',
-        password='Hfnfneq2005',
-        host='localhost',
-        port='5432'
-    )
-    cursor = conn.cursor()
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS jobs_job (
-            id SERIAL PRIMARY KEY,
-            title TEXT,
-            link TEXT,
-            company TEXT,
-            salary TEXT,
-            skills TEXT,
-            address TEXT,
-            experience TEXT,
-            remote TEXT
-        )
-        ''')
-
-    for job in jobs:
-        # Проверяем, существует ли уже вакансия с таким же заголовком
-        cursor.execute('SELECT id FROM jobs_job WHERE link = %s', (job['link'],))
-        existing_job = cursor.fetchone()
-
-        if existing_job:
-            print(f"Вакансия с заголовком '{job['title']}' уже существует в базе данных, пропускаем...")
-            continue
-
-        # Вставляем новую вакансию
+    with connection.cursor() as cursor:
         cursor.execute('''
-        INSERT INTO jobs_job (title, link, company, salary, skills, address, experience, remote) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        ''', (job['title'], job['link'], job['company'], job['salary'], job['skills'], job['address'], job['experience'],
-              job['remote']))
+            CREATE TABLE IF NOT EXISTS jobs_job (
+                id SERIAL PRIMARY KEY,
+                title TEXT,
+                link TEXT,
+                company TEXT,
+                salary TEXT,
+                skills TEXT,
+                address TEXT,
+                experience TEXT,
+                remote TEXT
+            )
+            ''')
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        for job in jobs:
+            # Проверяем, существует ли уже вакансия с таким же заголовком
+            cursor.execute('SELECT id FROM jobs_job WHERE link = %s', (job['link'],))
+            existing_job = cursor.fetchone()
+
+            if existing_job:
+                print(f"Вакансия с заголовком '{job['title']}' уже существует в базе данных, пропускаем...")
+                continue
+
+            # Вставляем новую вакансию
+            cursor.execute('''
+            INSERT INTO jobs_job (title, link, company, salary, skills, address, experience, remote) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ''', (job['title'], job['link'], job['company'], job['salary'], job['skills'], job['address'], job['experience'],
+                  job['remote']))
+
+        connection.commit()
 
 
 def parse():
