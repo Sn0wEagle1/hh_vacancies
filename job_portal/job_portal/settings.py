@@ -77,9 +77,9 @@ WSGI_APPLICATION = 'job_portal.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'vacancies',
-        'USER': 'postgres',
-        'PASSWORD': 'Hfnfneq2005',
+        'NAME': 'ваша_база_данных',
+        'USER': 'ваш_пользователь',
+        'PASSWORD': 'ваш_пароль',
         'HOST': 'localhost',
         'PORT': '5432',
     }
